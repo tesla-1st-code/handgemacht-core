@@ -1,0 +1,29 @@
+{
+  "name": "handgemacht-core",
+  "version": "1.0.0",
+  "description": "handgemacht is a store assistant to manage your items, payments, customer relations and analytics",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tesla-1st-code/handgemacht-core.git"
+  },
+  "keywords": [
+    "handgemacht",
+    "store",
+    "assistant",
+    "manager",
+    "customer",
+    "analytics",
+    "items",
+    "products"
+  ],
+  "author": "Vai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tesla-1st-code/handgemacht-core/issues"
+  },
+  "homepage": "https://github.com/tesla-1st-code/handgemacht-core#readme"
+}
