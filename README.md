@@ -1,0 +1,1 @@
+Handgemacht is your store assistant (especially for small to medium business). Handgemacht can manage your products, stocks, customer orders, customer relations, and also your store analytics.
