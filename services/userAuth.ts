@@ -91,7 +91,7 @@ export class UserAuthService {
         }
     }
 
-    @Get("/check-auth")
+    @Get("/checkAuth")
     @UseBefore(authenticateUser)
     async checkAuth(@Req() req: any) {
         return { authenticate: true };
