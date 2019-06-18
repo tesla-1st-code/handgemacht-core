@@ -10,7 +10,7 @@ const rateLimiter = require('express-rate-limit');
 const cookieSession = require('cookie-session');
 
 const limiter = rateLimiter({windowMs: 900000000, max: 1000});
-const session = cookieSession({ name: 'ngen_session', keys: [process.env.COOKIE_SECRET] });
+const session = cookieSession({ name: 'handgemacht_session', keys: [process.env.COOKIE_SECRET] });
 const app = express();
 
 app.set('trust proxy', 1);

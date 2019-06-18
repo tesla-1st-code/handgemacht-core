@@ -69,6 +69,7 @@ const createTables = async() => {
             cart_code_prefix VARCHAR(255) NOT NULL,
             payment_code_prefix VARCHAR(255) NOT NULL,
             order_code_prefix VARCHAR(255) NOT NULL,
+            supplier_code_prefix VARCHAR(255) NOT NULL,
             org_code VARCHAR(255),
             PRIMARY KEY (id),
             INDEX idx_settings(id, org_code)
@@ -88,6 +89,17 @@ const createTables = async() => {
     `);
 
     console.log("table roles has been created");
+
+    await conn.query(`
+        CREATE TABLE payment_methods(
+            id INT NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            PRIMARY KEY (id),
+            INDEX idx_payment_methods(id)
+        );
+    `);
+
+    console.log("table payment methods has been created");
 
     await conn.query(`
         CREATE TABLE banks(
@@ -151,11 +163,33 @@ const createTables = async() => {
     console.log("table user_auths has been created");
 
     await conn.query(`
+        CREATE TABLE suppliers(
+            id INT NOT NULL AUTO_INCREMENT,
+            code VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255),
+            address TEXT,
+            phone_number VARCHAR(255),
+            join_date DATE,
+            org_code VARCHAR(255) NOT NULL,
+            created_date DATETIME,
+            created_by INT,
+            updated_date DATETIME,
+            updated_by INT,
+            PRIMARY KEY (id),
+            INDEX idx_suppliers(id, org_code)
+        );
+    `);
+
+    console.log("table customers has been created");
+
+    await conn.query(`
         CREATE TABLE products(
             id INT NOT NULL AUTO_INCREMENT,
             code VARCHAR(255) NOT NULL,
             name VARCHAR(255) NOT NULL,
             description TEXT,
+            supplier_id INT,
             price DECIMAL(10,2) DEFAULT 0,
             picture_1_path TEXT,
             picture_2_path TEXT,
@@ -167,6 +201,7 @@ const createTables = async() => {
             updated_date DATETIME,
             updated_by INT,
             PRIMARY KEY (id),
+            FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
             INDEX idx_products(id, org_code)
         );
     `);
@@ -213,6 +248,26 @@ const createTables = async() => {
     `);
 
     console.log("table customers has been created");
+
+    await conn.query(`
+       CREATE TABLE promotions(
+           id INT NOT NULL AUTO_INCREMENT,
+           product_id INT NOT NULL,
+           price DECIMAL(10, 2) DEFAULT 0,
+           description TEXT,
+           is_active BOOLEAN DEFAULT 0,
+           org_code VARCHAR(255) NOT NULL,
+           created_by INT,
+           created_date DATETIME,
+           updated_by INT,
+           updated_date DATETIME,
+           PRIMARY KEY (id),
+           FOREIGN KEY (product_id) REFERENCES products(id),
+           INDEX idx_promotions(id, org_code)
+       )
+    `);
+
+    console.log("table promotion has been created");
 }
 
 const createData = async() => {
@@ -233,7 +288,8 @@ const createData = async() => {
     console.log("organization data has been created");
 
     await db.query(`INSERT INTO settings(customer_code_prefix, officer_code_prefix, product_code_prefix, cart_code_prefix, order_code_prefix, 
-                    payment_code_prefix, org_code) VALUES(?, ?, ?, ?, ?, ?, ?)`, ["CST-", "OFC-", "PRD-", "CRT/DEMO/", "ORD/DEMO/", "PYM/DEMO/", orgCode]);
+                    payment_code_prefix, supplier_code_prefix, org_code) VALUES(?, ?, ?, ?, ?, ?, ?, ?)`, 
+                    ["CST-", "OFC-", "PRD-", "CRT/DEMO/", "ORD/DEMO/", "PYM/DEMO/", "SUP/DEMO/", orgCode]);
     
     console.log("setting data has been created");
 
@@ -307,6 +363,23 @@ const createData = async() => {
 
         console.log("Customer " + (i + 1).toString() + " has been inserted");
     }
+
+    for (let i=0; i<300; i++) {
+        const name = "SUPPLIER " + (i + 1).toString();
+        const code = "SUP-" + (i + 1).toString();
+        const gender = genders[Math.floor(Math.random() * Math.floor(1))];
+        const email = "supplier" + (i + 1).toString() + "@supplier.com";
+
+        await db.query(`INSERT INTO customers(code, name, email, gender, join_date, org_code) VALUES(?, ?, ?, ?, now(), ?)`, 
+                          [code, name, email, gender, orgCode]);
+
+        console.log("Customer " + (i + 1).toString() + " has been inserted");
+    }
+
+    await db.query(`INSERT INTO payment_methods(name) VALUES(?)`, ['CASH', orgCode]);
+    await db.query(`INSERT INTO payment_methods(name) VALUES(?)`, ['TRANSFER', orgCode]);
+    await db.query(`INSERT INTO payment_methods(name) VALUES(?)`, ['CARD', orgCode]);
+    await db.query(`INSERT INTO payment_methods(name) VALUES(?)`, ['COD', orgCode]);
 }
 
 const run = async() => {
