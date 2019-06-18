@@ -25,8 +25,8 @@ const createTables = async() => {
     await conn.query(`
         CREATE TABLE locales(
             id INT NOT NULL AUTO_INCREMENT,
-            code VARCHAR(255) NOT NULL,
-            name VARCHAR(255) NOT NULL,
+            country_name VARCHAR(255) NOT NULL,
+            country_code VARCHAR(255) NOT NULL,
             currency_name VARCHAR(255) NOT NULL,
             currency_symbol VARCHAR(255) NOT NULL,
             int_call_prefix VARCHAR(10) NOT NULL,

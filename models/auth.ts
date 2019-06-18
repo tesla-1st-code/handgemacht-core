@@ -1,19 +1,18 @@
 import { IUser } from "./user";
 import { IRole } from "./role";
+import { IOrganization } from "./organization";
 
 export interface IAuth {
-    id: number;
     token: string;
     user: IUser;
     role: IRole;
-    organization: any;
+    organization: IOrganization;
     accesses: any[];
     loginDate: Date;
 }
 
 export const createAuth = (data: any) => {
     const entity: IAuth = {
-        id: data["id"],
         token: data["token"],
         user: data["user"],
         role: data["role"],
