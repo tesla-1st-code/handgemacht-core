@@ -35,6 +35,8 @@ const createTables = async() => {
         );
     `);
 
+    console.log("table locales has been created");
+
     await conn.query(`
         CREATE TABLE organizations(
             id INT NOT NULL AUTO_INCREMENT,
@@ -56,6 +58,8 @@ const createTables = async() => {
         );
     `);
 
+    console.log("table organizations has been created");
+
     await conn.query(`
         CREATE TABLE settings(
             id INT NOT NULL AUTO_INCREMENT,
@@ -71,6 +75,8 @@ const createTables = async() => {
         );
     `);
 
+    console.log("table settings has been created");
+
     await conn.query(`
         CREATE TABLE roles(
             id INT NOT NULL AUTO_INCREMENT,
@@ -81,6 +87,8 @@ const createTables = async() => {
         );
     `);
 
+    console.log("table roles has been created");
+
     await conn.query(`
         CREATE TABLE banks(
             id INT NOT NULL AUTO_INCREMENT,
@@ -90,6 +98,8 @@ const createTables = async() => {
             INDEX idx_banks(id, org_code)
         );
     `);
+
+    console.log("table banks has been created");
 
     await conn.query(`
         CREATE TABLE accesses(
@@ -102,6 +112,8 @@ const createTables = async() => {
             INDEX idx_accesses (id, role_id, org_code)
         );
     `);
+
+    console.log("table accesses has been created");
 
     await conn.query(`
         CREATE TABLE users(
@@ -119,6 +131,70 @@ const createTables = async() => {
             INDEX idx_users(id, org_code)
         );
     `);
+
+    console.log("table users has been created");
+
+    await conn.query(`
+        CREATE TABLE products(
+            id INT NOT NULL AUTO_INCREMENT,
+            code VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            price DECIMAL(10,2) DEFAULT 0,
+            picture_1_path TEXT,
+            picture_2_path TEXT,
+            picture_3_path TEXT,
+            picture_4_path TEXT,
+            org_code VARCHAR(255) NOT NULL,
+            created_date DATETIME,
+            created_by INT,
+            updated_date DATETIME,
+            updated_by INT,
+            PRIMARY KEY (id),
+            INDEX idx_products(id, org_code)
+        );
+    `);
+
+    console.log("table products has been created");
+
+    await conn.query(`
+        CREATE TABLE stocks(
+            id INT NOT NULL AUTO_INCREMENT,
+            product_id INT NOT NULL,
+            qty INT DEFAULT 0,
+            org_code VARCHAR(255) NOT NULL,
+            created_date DATETIME,
+            created_by INT,
+            updated_date DATETIME,
+            updated_by INT,
+            PRIMARY KEY (id),
+            FOREIGN KEY (product_id) REFERENCES products(id),
+            INDEX idx_stocks(id, org_code)
+        );
+    `);
+
+    console.log("table stocks has been created");
+
+    await conn.query(`
+        CREATE TABLE customers(
+            id INT NOT NULL AUTO_INCREMENT,
+            code VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255),
+            address TEXT,
+            phone_number VARCHAR(255),
+            join_date DATE,
+            org_code VARCHAR(255) NOT NULL,
+            created_date DATETIME,
+            created_by INT,
+            updated_date DATETIME,
+            updated_by INT,
+            PRIMARY KEY (id),
+            INDEX idx_customers(id, org_code)
+        );
+    `);
+
+    console.log("table customers has been created");
 }
 
 const run = async() => {
