@@ -65,7 +65,7 @@ const createTables = async() => {
             id INT NOT NULL AUTO_INCREMENT,
             customer_code_prefix VARCHAR(255) NOT NULL,
             product_code_prefix VARCHAR(255) NOT NULL,
-            office_code_prefix VARCHAR(255) NOT NULL,
+            officer_code_prefix VARCHAR(255) NOT NULL,
             cart_code_prefix VARCHAR(255) NOT NULL,
             payment_code_prefix VARCHAR(255) NOT NULL,
             order_code_prefix VARCHAR(255) NOT NULL,
@@ -213,9 +213,65 @@ const createTables = async() => {
     console.log("table customers has been created");
 }
 
+const createData = async() => {
+    const db = await createConnection(true);
+
+    const saltKey = await bcrypt.genSalt(saltRounds);
+    const hashKey = await bcrypt.hash(orgCode, saltKey);
+
+    const locale = await db.query(`INSERT INTO locales(country_code, country_name, currency_name, currency_symbol, int_call_prefix) 
+                                   VALUES (?, ?, ?, ?, ?)`, ["ID", "INDONESIA", "Rupiah", "Rp", "+62"]);
+
+    console.log("locale data has been created");
+
+    await db.query(`INSERT INTO organizations(locale_id, code, name, address_1, address_2, contact_person, official_email, phone_number, 
+                    logo_path, app_key, join_date, expired_date) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), '2019-12-12')`, 
+                    [locale["insertId"], orgCode, "PT Demo", "Jl Abc Def, Jakarta Pusat", "", "Vai", "vai13@gmail.com", "+6285993495949", "", hashKey]);
+    
+    console.log("organization data has been created");
+
+    await db.query(`INSERT INTO settings(customer_code_prefix, officer_code_prefix, product_code_prefix, cart_code_prefix, order_code_prefix, 
+                    payment_code_prefix, org_code) VALUES(?, ?, ?, ?, ?, ?, ?)`, ["CST-", "OFC-", "PRD-", "CRT/DEMO/", "ORD/DEMO/", "PYM/DEMO/", orgCode]);
+    
+    console.log("setting data has been created");
+
+    await db.query(`INSERT INTO banks(name, org_code) VALUES(?, ?)`, ['MANDIRI', orgCode]);
+    await db.query(`INSERT INTO banks(name, org_code) VALUES(?, ?)`, ['BCA', orgCode]);
+    await db.query(`INSERT INTO banks(name, org_code) VALUES(?, ?)`, ['BRI', orgCode]);
+
+    console.log("bank data has been created");
+
+    await db.query(`INSERT INTO roles(name, org_code) VALUES(?, ?)`, ['ADMINISTRATOR', orgCode]);
+
+    const userSalt = await bcrypt.genSalt(saltRounds);
+    const userPass = process.env.DEFAULT_ADMIN_PASS;
+    const userHash = await bcrypt.hash(userPass, userSalt);
+
+    await db.query(`INSERT INTO users(code, name, user_name, hash, salt, role_id, org_code) VALUES(?, ?, ?, ?, ?, ?, ?)`, 
+                   ["OFC-1", "administrator", "admin", userHash, userSalt, 1, orgCode]);
+    
+   console.log("user data has been created");
+
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "dashboard", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "customer", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "account", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "product", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "stock", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "cart", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "order", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "payment", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "analytic", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "report", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "user", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "setting", orgCode]);
+
+   console.log("access data has been created");
+}
+
 const run = async() => {
     await createDB();
     await createTables();
+    await createData();
 }
 
 run();
