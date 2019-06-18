@@ -199,6 +199,8 @@ const createTables = async() => {
             email VARCHAR(255),
             address TEXT,
             phone_number VARCHAR(255),
+            birth_date DATE,
+            gender VARCHAR(5),
             join_date DATE,
             org_code VARCHAR(255) NOT NULL,
             created_date DATETIME,
@@ -266,6 +268,45 @@ const createData = async() => {
    await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "setting", orgCode]);
 
    console.log("access data has been created");
+
+   for (let i=0; i<300; i++) {
+        const name = "PRODUCT " + (i + 1).toString();
+        const code = "PRD-" + (i + 1).toString();
+        const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+            Phasellus blandit metus rutrum tellus consectetur dapibus. 
+            Vivamus ut justo eget lectus auctor congue.
+            Maecenas vel dictum sem. Donec fringilla blandit sapien, vel feugiat eros accumsan quis. 
+            Aenean consectetur vulputate aliquam. Nulla quis risus lacinia, dapibus lectus ac, imperdiet massa. 
+            Morbi a nisl arcu. Ut ornare diam sed tempus volutpat. Duis fringilla tortor ac gravida aliquet. 
+            Nullam faucibus nec purus a viverra.
+            Mauris ut nisl aliquet, pharetra ex sed, hendrerit quam. Morbi urna felis, dignissim id tincidunt non, hendrerit cursus tellus.
+            Fusce at vehicula mauris. Nunc lobortis feugiat dui sit amet pharetra. 
+            Praesent lacinia nisi eget purus vehicula, et lacinia libero scelerisque.`;
+
+        const inserted = await db.query(`INSERT INTO products(code, name, description, price, created_by, created_date, org_code) 
+                                        VALUES (?, ?, ?, ?, 1, now(), '6e8e0aea-955e-4c21-a9cd-3cb57b555676');`, 
+                                        [code, name, description, Math.floor(Math.random() * Math.floor(500))]);
+
+        await db.query(`INSERT INTO stocks(product_id, qty, created_by, created_date, org_code) 
+                        VALUES(?, ?, 1, now(), '6e8e0aea-955e-4c21-a9cd-3cb57b555676')`, 
+                        [inserted["insertId"], Math.floor(Math.random() * Math.floor(300))]);
+
+        console.log("Product " + (i + 1).toString() + " has been inserted");
+    }
+
+    const genders = ["m", "f"];
+
+    for (let i=0; i<300; i++) {
+        const name = "CUSTOMER " + (i + 1).toString();
+        const code = "CST-" + (i + 1).toString();
+        const gender = genders[Math.floor(Math.random() * Math.floor(1))];
+        const email = "cust" + (i + 1).toString() + "@customer.com";
+
+        await db.query(`INSERT INTO customers(code, name, email, gender, join_date, org_code) VALUES(?, ?, ?, ?, now(), ?)`, 
+                          [code, name, email, gender, orgCode]);
+
+        console.log("Customer " + (i + 1).toString() + " has been inserted");
+    }
 }
 
 const run = async() => {
