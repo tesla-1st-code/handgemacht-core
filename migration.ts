@@ -1,4 +1,4 @@
-import createConnection from './db';
+import { createConnection } from './db';
 
 const bcrypt = require('bcrypt');
 const saltRounds = 16;
@@ -133,6 +133,22 @@ const createTables = async() => {
     `);
 
     console.log("table users has been created");
+
+    await conn.query(`
+        CREATE TABLE user_auths(
+            id INT NOT NULL AUTO_INCREMENT,
+            user_id INT NOT NULL,
+            token VARCHAR(255) NOT NULL,
+            ip_address VARCHAR(255) NOT NULL,
+            login_date DATETIME NOT NULL,
+            org_code VARCHAR(255),
+            PRIMARY KEY (id),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            INDEX idx_auths(id, token, org_code)
+        );
+    `);
+
+    console.log("table user_auths has been created");
 
     await conn.query(`
         CREATE TABLE products(

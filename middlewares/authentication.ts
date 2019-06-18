@@ -1,4 +1,4 @@
-import createConnection from '../db';
+import { createConnection } from '../db';
 
 const bearerToken = require('bearer-token');
 const moment = require('moment');
@@ -25,7 +25,7 @@ export const authenticateForLogin = async (req, res, next) => {
     });
 }
 
-export const authenticateBackend = async (req, res, next) => {
+export const authenticateUser = async (req, res, next) => {
     bearerToken(req, async(err, token) => {
         if (err) {
             return res.status(500).send(err);
@@ -51,7 +51,7 @@ export const authenticateBackend = async (req, res, next) => {
             return res.status(401).send("You are not our member :)");
         }
 
-        const auth = await conn.query("SELECT * FROM auths WHERE token=?", [bearerToken]);
+        const auth = await conn.query("SELECT * FROM user_auths WHERE token=?", [bearerToken]);
 
         if (auth.length === 0) {
             return res.status(401).send("You are not logged in.");

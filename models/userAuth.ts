@@ -2,7 +2,7 @@ import { IUser } from "./user";
 import { IRole } from "./role";
 import { IOrganization } from "./organization";
 
-export interface IAuth {
+export interface IUserAuth {
     token: string;
     user: IUser;
     role: IRole;
@@ -11,8 +11,8 @@ export interface IAuth {
     loginDate: Date;
 }
 
-export const createAuth = (data: any) => {
-    const entity: IAuth = {
+export const createUserAuth = (data: any) => {
+    const entity: IUserAuth = {
         token: data["token"],
         user: data["user"],
         role: data["role"],

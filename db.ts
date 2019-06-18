@@ -2,7 +2,7 @@ const mysql = require('promise-mysql');
 
 require('dotenv').config();
 
-export default async (useDefaultDB: boolean = false) => {
+export const createConnection = async (useDefaultDB: boolean = false) => {
     try {
         let pool;
         let connection;

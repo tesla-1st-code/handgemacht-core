@@ -1,13 +1,13 @@
 import { JsonController, Get, UseBefore, Post, Body, Req, Param } from "routing-controllers";
-import { authenticateBackend, authenticateForLogin } from "../middlewares/authentication";
-import createConnection from "../db";
-import { IAuth } from "../models/auth";
+import { authenticateUser, authenticateForLogin } from "../middlewares/authentication";
+import { createConnection } from "../db";
+import { IUserAuth } from "../models/userAuth";
 
 const bcrypt = require('bcrypt');
 const uuidv4 = require('uuid/v4');
 
-@JsonController("/auths")
-export class AuthService {
+@JsonController("/userAuths")
+export class UserAuthService {
 
     @Post("/login")
     @UseBefore(authenticateForLogin)
@@ -32,9 +32,9 @@ export class AuthService {
 
             let token = uuidv4();
 
-            const insertAuthSql = `INSERT INTO auths(user_id, token, login_date, ip_address, org_code) VALUES(?, ?, now(), ?, ?)`;
+            const insertAuthSql = `INSERT INTO user_auths(user_id, token, login_date, ip_address, org_code) VALUES(?, ?, now(), ?, ?)`;
             const params = [user[0]["id"], token, data["ipAddress"], req["orgCode"]];
-            const existingAuth = await db.query(`SELECT * FROM auths WHERE user_id=?`, [user[0]["id"]]);
+            const existingAuth = await db.query(`SELECT * FROM user_auths WHERE user_id=?`, [user[0]["id"]]);
 
             if (existingAuth.length === 0) {
                 await db.query(insertAuthSql, params);
@@ -42,7 +42,7 @@ export class AuthService {
 
             else {
                 token = existingAuth[0]["token"];
-                await db.query(`UPDATE auths SET login_date=? WHERE token=?`, [token]);
+                await db.query(`UPDATE user_auths SET login_date=? WHERE token=?`, [token]);
             }
 
             const role = await db.query(`SELECT * FROM roles WHERE id=?`, [user[0]["role_id"]]);
@@ -50,7 +50,7 @@ export class AuthService {
             const organization = await db.query(`SELECT * FROM organizations WHERE code=?`, req["orgCode"]);
             const locale = await db.query(`SELECT * FROM locale WHERE id=?`, [organization[0]["code"]]);
             
-            const auth: IAuth = {
+            const auth: IUserAuth = {
                 token: token,
                 user: {
                     id: user[0]["id"],
@@ -92,13 +92,13 @@ export class AuthService {
     }
 
     @Get("/check-auth")
-    @UseBefore(authenticateBackend)
+    @UseBefore(authenticateUser)
     async checkAuth(@Req() req: any) {
         return { authenticate: true };
     }
 
     @Get("/logout")
-    @UseBefore(authenticateBackend)
+    @UseBefore(authenticateUser)
     async logout(@Req() req: any) {
         try {
             const db = await createConnection(true);
