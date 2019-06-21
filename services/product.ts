@@ -1,7 +1,7 @@
-import { JsonController, Get, UseBefore, Post, Body, Req, Param, UploadedFile, QueryParam, Delete } from "routing-controllers";
-import { authenticateUser, authenticateForLogin } from "../middlewares/authentication";
+import { JsonController, Get, UseBefore, Post, Body, Req, Param, UploadedFile, QueryParams, Delete } from "routing-controllers";
+import { authenticateUser } from "../middlewares/authentication";
 import { createConnection } from "../db";
-import { IProduct } from "../models/product";
+import { IProduct, createProduct, createProducts } from "../models/product";
 import { storage } from "../middlewares/uploader";
 
 const multer = require('multer');
@@ -12,11 +12,87 @@ export class ProductService {
 
     @Get("/get/:id")
     @UseBefore(authenticateUser)
-    async get(@Param("id") id: any, @Req() req: any) {}
+    async get(@Param("id") id: any, @Req() req: any) {
+        try {
+            const db = await createConnection(true);
+            
+            const sql = `SELECT products.id, products.code, products.name, products.description, products.price,  
+                         products.picture_1_path, products.picture_2_path, products.picture_3_path, products.picture_4_path,
+                         products.created_date, products.updated_date, suppliers.id as supplier_id, suppliers.code as supplier_code, 
+                         suppliers.name as supplier_name FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id 
+                         WHERE products.id=? AND org_code=? LIMIT 1;`;
+
+            const result = await db.query(sql, [id, req["orgCode"]]);
+
+            if (result.length === 0) {
+                return {};
+            }
+            
+            const entity: IProduct = createProduct(result);
+            return entity;
+        }
+        catch(error) {
+            throw new Error(error.message);
+        }
+    }
 
     @Get("/getAll")
     @UseBefore(authenticateUser)
-    async getAll(@QueryParam("query") query: any) {}
+    async getAll(@QueryParams() query: any, @Req() req: any) {
+        try {
+            const db = await createConnection(true);
+            const queryParams = JSON.parse(query.query);
+
+            let sql =  `SELECT products.id, products.code, products.name, products.description, products.price,  
+                        products.picture_1_path, products.picture_2_path, products.picture_3_path, products.picture_4_path,
+                        products.created_date, products.updated_date, suppliers.id as supplier_id, suppliers.code as supplier_code, 
+                        suppliers.name as supplier_name FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id 
+                        WHERE org_code=?;`
+
+            let sqlCount = `SELECT COUNT(*) FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id WHERE org_code=?`;
+            let clauses = [];
+            let params = [req["orgCode"]];
+
+            if (queryParams["code"]) {
+                clauses.push("code LIKE ?");
+                params.push("%" + queryParams["code"] + "%");
+            }
+
+            if (queryParams["name"]) {
+                clauses.push("name LIKE ?");
+                params.push("%" + queryParams["name"] + "%");
+            }
+
+            if (queryParams["supplierId"]) {
+                clauses.push("supplier_id = ?");
+                params.push(queryParams["supplierId"]);
+            }
+
+            if (clauses.length > 0) {
+                sql +=  clauses.length > 1 ? clauses.join(" AND ") : (" AND " + clauses[0]);
+                sqlCount += clauses.length > 1 ? clauses.join(" AND ") : (" AND " + clauses[0]);
+            }
+
+            sql += " ORDER BY id DESC ";
+
+            if (queryParams["limit"] && queryParams["offset"]) {
+                sql += " LIMIT ? OFFSET ?";
+
+                params.push(queryParams["limit"]);
+                params.push(queryParams["offset"]);
+            }
+            
+            const result = await db.query(sql, params);
+            const count = await db.query(sqlCount, params); 
+            const entities: IProduct[] = createProducts(result);
+
+            return {count: count, rows: entities};
+
+        }
+        catch(error) {
+            throw new Error(error.message);
+        }
+    }
 
     @Post("/upload/:id")
     @UseBefore(authenticateUser)
@@ -28,5 +104,21 @@ export class ProductService {
 
     @Delete("/delete/:id")
     @UseBefore(authenticateUser)
-    async delete(@Param("id") id: number, @Req() req: any) {}
+    async delete(@Param("id") id: number, @Req() req: any) {
+        const db = await createConnection(true);
+
+        try {
+            await db.query("SET autocommit = OFF;");
+            await db.query("START TRANSACTION;");
+
+            await db.query(`DELETE FROM stocks WHERE product_id=? AND org_code=?`, [id, req["orgCode"]]);
+            await db.query(`DELETE FROM products WHERE id=? AND org_code=?`, [id, req["orgCode"]]);
+
+            await db.query("COMMIT;");
+            return {"success": true};
+        }
+        catch(error) {
+            throw new Error(error.message);
+        }
+    }
 }
