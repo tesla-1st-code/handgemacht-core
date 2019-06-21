@@ -264,7 +264,7 @@ const createTables = async() => {
            PRIMARY KEY (id),
            FOREIGN KEY (product_id) REFERENCES products(id),
            INDEX idx_promotions(id, org_code)
-       )
+       );
     `);
 
     console.log("table promotion has been created");
@@ -314,6 +314,7 @@ const createData = async() => {
    await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "customer", orgCode]);
    await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "account", orgCode]);
    await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "product", orgCode]);
+   await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "promotion", orgCode]);
    await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "stock", orgCode]);
    await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "cart", orgCode]);
    await db.query("INSERT INTO accesses(role_id, menu, org_code)VALUES(?, ?, ?)", [1, "order", orgCode]);
