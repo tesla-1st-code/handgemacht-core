@@ -29,8 +29,7 @@ export class ProductService {
                 return {};
             }
             
-            const entity: IProduct = createProduct(result);
-            return entity;
+            return createProduct(result[0]);
         }
         catch(error) {
             throw new Error(error.message);
