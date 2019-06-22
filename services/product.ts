@@ -20,7 +20,10 @@ export class ProductService {
             const sql = `SELECT products.id, products.code, products.name, products.description, products.price,  
                          products.picture_1_path, products.picture_2_path, products.picture_3_path, products.picture_4_path,
                          products.created_date, products.updated_date, suppliers.id as supplier_id, suppliers.code as supplier_code, 
-                         suppliers.name as supplier_name FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id 
+                         suppliers.name as supplier_name FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id,
+                         created_user.name as user_created, products.created_date, updated_user.name as user_updated, products.updated_date
+                         LEFT JOIN users as created_user ON products.created_by = created_user.id
+                         LEFT JOIN users as updated_user ON products.updated_by = updated_user.id
                          WHERE products.id=? AND org_code=? LIMIT 1;`;
 
             const result = await db.query(sql, [id, req["orgCode"]]);
@@ -46,10 +49,16 @@ export class ProductService {
             let sql =  `SELECT products.id, products.code, products.name, products.description, products.price,  
                         products.picture_1_path, products.picture_2_path, products.picture_3_path, products.picture_4_path,
                         products.created_date, products.updated_date, suppliers.id as supplier_id, suppliers.code as supplier_code, 
-                        suppliers.name as supplier_name FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id 
+                        suppliers.name as supplier_name FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id,
+                        created_user.name as user_created, products.created_date, updated_user.name as user_updated, products.updated_date
+                        LEFT JOIN users as created_user ON products.created_by = created_user.id
+                        LEFT JOIN users as updated_user ON products.updated_by = updated_user.id
                         WHERE org_code=?;`
 
-            let sqlCount = `SELECT COUNT(*) FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id WHERE org_code=?`;
+            let sqlCount = `SELECT COUNT(products.id) FROM products LEFT JOIN suppliers ON products.supplier_id = suppliers.id 
+                            LEFT JOIN users as created_user ON products.created_by = created_user.id
+                            LEFT JOIN users as updated_user ON products.updated_by = updated_user.id WHERE org_code=?`;
+
             let clauses = [];
             let params = [req["orgCode"]];
 
@@ -73,7 +82,7 @@ export class ProductService {
                 sqlCount += clauses.length > 1 ? clauses.join(" AND ") : (" AND " + clauses[0]);
             }
 
-            sql += " ORDER BY id DESC ";
+            sql += " ORDER BY products.id DESC ";
 
             if (queryParams["limit"] && queryParams["offset"]) {
                 sql += " LIMIT ? OFFSET ?";
@@ -86,7 +95,7 @@ export class ProductService {
             const count = await db.query(sqlCount, params); 
             const entities: IProduct[] = createProducts(result);
 
-            return {count: count, rows: entities};
+            return {count: count[0]["COUNT(products.id)"], rows: entities};
 
         }
         catch(error) {

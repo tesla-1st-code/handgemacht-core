@@ -18,10 +18,10 @@ export const createOrganization = (data: any) => {
         name: data["name"],
         address1: data["address_1"] ? data["address_1"] : null,
         address2: data["address_2"] ? data["address_2"] : null,
-        officialEmail: data["official_email"] ? data["official_email"] : null,
-        phoneNumber: data["phone_number"] ? data["phone_number"] : null,
+        officialEmail: data["official_email"],
+        phoneNumber: data["phone_number"],
         joinDate: data["join_date"],
-        logo_path: data["logo_path"] ? data["logo_path"] : null
+        logo_path: data["logo_path"]
     }
 
     return entity;

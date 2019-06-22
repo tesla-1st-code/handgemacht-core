@@ -16,7 +16,7 @@ export const createRoles = (data: any[]) => {
     let entities: IRole[] = [];
 
     for (let i=0; i<data.length; i++) {
-        entities.push({id: data[i]["id"], name: data[i]["name"]});
+        entities.push(createRole(data[i]));
     }
 
     return entities;

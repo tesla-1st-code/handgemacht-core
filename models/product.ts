@@ -23,22 +23,22 @@ export const createProduct = (data: any) => {
         id: data["id"],
         code: data["code"],
         name: data["name"],
-        description: data["description"] ? data["description"] : null,
+        description: data["description"],
         price: data["price"] ? parseFloat(data["price"]) : 0.0,
-        supplierId: data["supplier_id"] ? data["supplier_id"] : null,
+        supplierId: data["supplier_id"],
         supplier: {
-            id: data["supplier_id"] ? data["supplier_id"] : null,
-            code: data["supplier_code"] ? data["supplier_code"] : null,
-            name: data["supplier_name"] ? data["supplier_name"] : null
+            id: data["supplier_id"],
+            code: data["supplier_code"],
+            name: data["supplier_name"]
         },
-        picture1Path: data["picture_1_path"] ? data["picture_1_path"] : null,
-        picture2Path: data["picture_2_path"] ? data["picture_2_path"] : null,
-        picture3Path: data["picture_3_path"] ? data["picture_3_path"] : null,
-        picture4Path: data["picture_4_path"] ? data["picture_4_path"] : null,
-        userCreated: data["user_created"] ? data["user_created"] : null,
-        createdDate: data["created_date"] ? data["created_date"] : null,
-        userUpdated: data["user_updated"] ? data["user_updated"] : null,
-        updatedDate: data["updated_date"] ? data["updated_date"] : null
+        picture1Path: data["picture_1_path"],
+        picture2Path: data["picture_2_path"],
+        picture3Path: data["picture_3_path"],
+        picture4Path: data["picture_4_path"],
+        userCreated: data["user_created"],
+        createdDate: data["created_date"],
+        userUpdated: data["user_updated"],
+        updatedDate: data["updated_date"]
     }
 
     return entity;

@@ -34,7 +34,7 @@ export class SupplierService {
             const queryParams = JSON.parse(query.query);
 
             let sql = `SELECT * FROM suppliers WHERE org_code=?`;
-            let sqlCount = `SELECT COUNT(*) FROM suppliers WHERE org_code=?`;
+            let sqlCount = `SELECT COUNT(id) FROM suppliers WHERE org_code=?`;
             let params = [req["orgCode"]];
             let clauses = [];
 
@@ -66,7 +66,7 @@ export class SupplierService {
             const count = await db.query(sqlCount, params); 
             const entities: ISupplier[] = createSuppliers(result);
 
-            return {count: count, rows: entities};
+            return {count: count[0]["COUNT(id)"], rows: entities};
         }
         catch(error) {
             throw new Error(error.message);
