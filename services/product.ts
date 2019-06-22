@@ -3,6 +3,7 @@ import { authenticateUser } from "../middlewares/authentication";
 import { createConnection } from "../db";
 import { IProduct, createProduct, createProducts } from "../models/product";
 import { storage } from "../middlewares/uploader";
+import { buildCode } from "../utils/codeBuilder";
 
 const multer = require('multer');
 const upload = multer({ storage: storage });
@@ -100,7 +101,52 @@ export class ProductService {
 
     @Post("/save")
     @UseBefore(authenticateUser)
-    async save(@Body() data: any, @Req() req: any) {}
+    async save(@Body() data: any, @Req() req: any) {
+        const db = await createConnection(true);
+
+        try {
+            await db.query("SET autocommit = OFF;");
+            await db.query("START TRANSACTION;");
+            
+            let isNew = true;
+            let sql = null;
+            let params = [];
+
+            if (data["id"]) {
+                isNew = false;
+            }
+
+            const code = await buildCode(db, req["orgCode"], "product_code", "products");
+            
+            if (isNew) {
+                sql = `INSERT INTO products(code, name, description, price, supplier_id, org_code, created_by, created_date) 
+                      VALUES(?, ?, ?, ?, ?, ?, now())`;
+
+                params = [code, data["name"], data["description"], data["price"], data["supplierId"], req["orgCode"], data["userId"]];
+            }
+            else {
+                sql = `UPDATE products SET name=?, description=?, price=?, supplier_id=?, updated_by=?, updated_date=now() 
+                       WHERE id=? AND org_code=?`;
+                       
+                params = [data["name"], data["description"], data["price"], data["supplierId"], data["userId"], data["id"], req["orgCode"]];
+            }
+            
+            const insertedProduct = await db.query(sql, params);
+
+            if (isNew) {
+                await db.query(`INSERT INTO stocks(product_id, qty, org_code, created_by, created_date) VALUES(?, ?, ?, ?, now())`, 
+                              [insertedProduct["insertId"], data["initialQty"], req["orgCode"], data["userId"]]);
+            }
+
+            await db.query("COMMIT;");
+
+            return {"success": true};
+        }
+        catch(error) {
+            await db.query("ROLLBACK;");
+            throw new Error(error.message);
+        }
+    }
 
     @Delete("/delete/:id")
     @UseBefore(authenticateUser)
