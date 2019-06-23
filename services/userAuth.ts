@@ -54,6 +54,7 @@ export class UserAuthService {
                 token: token,
                 user: {
                     id: user[0]["id"],
+                    code: user[0]["code"],
                     name: user[0]["name"],
                     email: user[0]["email"],
                     roleId: null,
