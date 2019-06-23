@@ -1,4 +1,4 @@
-import { JsonController, Get, UseBefore, Post, Body, Req, Param, UploadedFile, QueryParams, Delete } from "routing-controllers";
+import { JsonController, Get, UseBefore, Post, Body, Req, Param, QueryParams, Delete } from "routing-controllers";
 import { authenticateUser } from "../middlewares/authentication";
 import { createConnection } from "../db";
 import { IStock, createStock, createStocks } from "../models/stock";

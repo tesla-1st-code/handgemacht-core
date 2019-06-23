@@ -1,25 +1,25 @@
-import { JsonController, Get, UseBefore, Post, Body, Req, Param, QueryParams, Delete } from "routing-controllers";
+import { JsonController, Get, UseBefore, Post, Body, Req, Param, UploadedFile, QueryParams, Delete } from "routing-controllers";
 import { authenticateUser } from "../middlewares/authentication";
 import { createConnection } from "../db";
-import { ISupplier, createSupplier, createSuppliers } from "../models/supplier";
+import { ICustomer, createCustomer, createCustomers } from "../models/customer";
 import { buildCode } from "../utils/codeBuilder";
 
-@JsonController("/suppliers")
-export class SupplierService {
+@JsonController("/customers")
+export class CustomerService {
 
     @Get("/get/:id")
     @UseBefore(authenticateUser)
     async get(@Param("id") id: number, @Req() req: any) {
         try {
             const db = await createConnection(true);
-            const sql = `SELECT * FROM suppliers WHERE id=? AND org_code=?`;
+            const sql = `SELECT * FROM customers WHERE id=? AND org_code=?`;
             const result = await db.query(sql, [id, req["orgCode"]]);
 
             if (result.length === 0) {
                 return {};
             }
 
-            return createSupplier(result[0]);
+            return createCustomer(result[0]);
         }
         catch(error) {
             throw new Error(error.message);
@@ -33,8 +33,8 @@ export class SupplierService {
             const db = await createConnection(true);
             const queryParams = JSON.parse(query.query);
 
-            let sql = `SELECT * FROM suppliers WHERE org_code=?`;
-            let sqlCount = `SELECT COUNT(id) FROM suppliers WHERE org_code=?`;
+            let sql = `SELECT * FROM customers WHERE org_code=?`;
+            let sqlCount = `SELECT COUNT(id) FROM customers WHERE org_code=?`;
             let params = [req["orgCode"]];
             let clauses = [];
 
@@ -64,7 +64,7 @@ export class SupplierService {
             
             const result = await db.query(sql, params);
             const count = await db.query(sqlCount, params); 
-            const entities: ISupplier[] = createSuppliers(result);
+            const entities: ICustomer[] = createCustomers(result);
 
             return {count: count[0]["COUNT(id)"], rows: entities};
         }
@@ -87,19 +87,21 @@ export class SupplierService {
                 isNew = false;
             }
 
-            const code = await buildCode(db, req["orgCode"], "supplier_code", "suppliers");
+            const code = await buildCode(db, req["orgCode"], "customer_code", "customers");
 
             if (isNew) {
-                sql = `INSERT INTO suppliers(code, name, email, address, phone_number, join_date, org_code, created_by, created_date) 
-                      VALUES(?, ?, ?, ?, ?, now(), ?, ?, now())`;
+                sql = `INSERT INTO customers(code, name, email, address, phone_number, gender, birth_date, join_date, org_code, created_by, 
+                       created_date) VALUES(?, ?, ?, ?, ?, ?, ? now(), ?, ?, now())`;
 
-                params = [code, data["name"], data["email"], data["address"], data["phoneNumber"], req["orgCode"], data["userId"]];
+                params = [code, data["name"], data["email"], data["address"], data["phoneNumber"], data["gender"], data["birthDate"], req["orgCode"], 
+                          data["userId"]];
             }
             else {
-                sql = `UPDATE suppliers SET name=?, email=?, address=?, phone_number=?, updated_by=?, updated_date=now() 
+                sql = `UPDATE suppliers SET name=?, email=?, address=?, phone_number=?, gender=?, birty_date=? updated_by=?, updated_date=now() 
                        WHERE id=? AND org_code=?`;
                        
-                params = [data["name"], data["email"], data["address"], data["phoneNumber"], data["userId"], data["id"], req["orgCode"]];
+                params = [data["name"], data["email"], data["address"], data["phoneNumber"], data["gender"], data["birthDate"], data["userId"], 
+                          data["id"], req["orgCode"]];
             }
             
             await db.query(sql, params);
@@ -117,7 +119,7 @@ export class SupplierService {
         try {
             const db = await createConnection(true);
 
-            await db.query(`DELETE FROM suppliers WHERE id=? AND org_code=?`, [id, req["orgCode"]]);
+            await db.query(`DELETE FROM customers WHERE id=? AND org_code=?`, [id, req["orgCode"]]);
 
             return {"success": true};
         }

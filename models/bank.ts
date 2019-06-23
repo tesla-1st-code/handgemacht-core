@@ -16,7 +16,7 @@ export const createBanks = (data: any[]) => {
     let entities: IBank[] = [];
 
     for (let i=0; i<data.length; i++) {
-        entities.push({id: data[i]["id"], name: data[i]["name"]});
+        entities.push(createBank(data[i]));
     }
 
     return entities;
