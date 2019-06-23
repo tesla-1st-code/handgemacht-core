@@ -253,6 +253,7 @@ const createTables = async() => {
        CREATE TABLE promotions(
            id INT NOT NULL AUTO_INCREMENT,
            product_id INT NOT NULL,
+           voucher_code VARCHAR(255),
            price DECIMAL(10, 2) DEFAULT 0,
            description TEXT,
            is_active BOOLEAN DEFAULT 0,
@@ -268,6 +269,62 @@ const createTables = async() => {
     `);
 
     console.log("table promotion has been created");
+
+    await conn.query(`
+       CREATE TABLE carts(
+           id INT NOT NULL AUTO_INCREMENT,
+           code VARCHAR(255) NOT NULL,
+           customer_id INT,
+           ip_address VARCHAR(255),
+           total_items INT DEFAULT 0,
+           grand_total DECIMAL(10, 2) DEFAULT 0,
+           org_code VARCHAR(255) NOT NULL,
+           cart_date DATETIME,
+           checkout_date DATETIME,
+           PRIMARY KEY (id),
+           FOREIGN KEY (customer_id) REFERENCES customers(id),
+           INDEX idx_carts(id, org_code)
+       );
+    `);
+
+    console.log("table cart has been created");
+
+    await conn.query(`
+       CREATE TABLE cart_details(
+           id INT NOT NULL AUTO_INCREMENT,
+           cart_id INT NOT NULL,
+           product_id INT NOT NULL,
+           qty INT DEFAULT 0,
+           sub_total DECIMAL(10, 2) DEFAULT 0,
+           additional DECIMAL(10, 2) DEFAULT 0,
+           discount DECIMAL(10, 2) DEFAULT 0,
+           tax_percentage FLOAT DEFAULT 0,
+           is_using_promo BOOLEAN DEFAULT 0,
+           org_code VARCHAR(255) NOT NULL,
+           created_date DATETIME,
+           PRIMARY KEY (id),
+           FOREIGN KEY (product_id) REFERENCES products(id),
+           INDEX idx_cart_details(id, cart_id, org_code)
+       );
+    `);
+
+    console.log("table cart detail has been created");
+
+    await conn.query(`
+       CREATE TABLE orders(
+           id INT NOT NULL AUTO_INCREMENT,
+           code VARCHAR(255) NOT NULL,
+           cart_id INT NOT NULL
+           org_code VARCHAR(255) NOT NULL,
+           processed_date DATETIME,
+           processed_by INT,
+           PRIMARY KEY (id),
+           FOREIGN KEY (cart_id) REFERENCES carts(id),
+           INDEX idx_orders(id, org_code)
+       );
+    `);
+
+    console.log("table order has been created");
 }
 
 const createData = async() => {

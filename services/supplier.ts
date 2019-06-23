@@ -91,7 +91,7 @@ export class SupplierService {
 
             if (isNew) {
                 sql = `INSERT INTO suppliers(code, name, email, address, phone_number, join_date, org_code, created_by, created_date) 
-                      VALUES(?, ?, ?, ?, ?, now(), ?, ?, now())`;
+                       VALUES(?, ?, ?, ?, ?, now(), ?, ?, now())`;
 
                 params = [code, data["name"], data["email"], data["address"], data["phoneNumber"], req["orgCode"], data["userId"]];
             }
