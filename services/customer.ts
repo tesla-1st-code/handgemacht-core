@@ -87,7 +87,7 @@ export class CustomerService {
                 isNew = false;
             }
 
-            const code = await buildCode(db, req["orgCode"], "customer_code", "customers");
+            const code = await buildCode(db, req["orgCode"], "customer_code_prefix", "customers");
 
             if (isNew) {
                 sql = `INSERT INTO customers(code, name, email, address, phone_number, gender, birth_date, join_date, org_code, created_by, 

@@ -124,7 +124,7 @@ export class ProductService {
                 isNew = false;
             }
 
-            const code = await buildCode(db, req["orgCode"], "product_code", "products");
+            const code = await buildCode(db, req["orgCode"], "product_code_prefix", "products");
             
             if (isNew) {
                 sql = `INSERT INTO products(code, name, description, price, supplier_id, org_code, created_by, created_date) 

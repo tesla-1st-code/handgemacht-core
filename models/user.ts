@@ -2,6 +2,7 @@ import { IRole } from "./role";
 
 export interface IUser {
     id: number;
+    code: string;
     name: string;
     email?: string;
     userName: string;
@@ -12,8 +13,9 @@ export interface IUser {
 export const createUser = (data: any) => {
     const entity: IUser = {
         id: data["id"],
+        code: data["code"],
         name: data["name"],
-        email: data["email"] ? data["email"] : null,
+        email: data["email"],
         userName: data["user_name"],
         roleId: data["role_id"],
         role: {

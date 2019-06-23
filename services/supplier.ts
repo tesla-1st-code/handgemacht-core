@@ -87,7 +87,7 @@ export class SupplierService {
                 isNew = false;
             }
 
-            const code = await buildCode(db, req["orgCode"], "supplier_code", "suppliers");
+            const code = await buildCode(db, req["orgCode"], "supplier_code_prefix", "suppliers");
 
             if (isNew) {
                 sql = `INSERT INTO suppliers(code, name, email, address, phone_number, join_date, org_code, created_by, created_date) 
